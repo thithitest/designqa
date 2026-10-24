@@ -78,13 +78,46 @@ function readManifest() {
 // If there are no issues, "pass" should be true and "findings" empty.
 // ============================================================
 function buildPrompt(diff, manifest) {
-  return `TODO: write your prompt here.
+  return `You are a design system QA reviewer. Your job is to review a pull request
+diff and decide whether it complies with the design system described in the
+component manifest below.
+
+The manifest is the single source of truth. Base every check ONLY on what the
+manifest actually says — its approved components and their approved variants and
+sizes, its deprecated variants, its color/spacing tokens, and every entry in its
+"rules" array. Do not invent, assume, or apply any rule, convention, or best
+practice that is not stated in the manifest.
 
 Manifest:
 ${manifest}
 
 Diff:
-${diff}`;
+${diff}
+
+Instructions:
+- Review the diff against the manifest. Treat each manifest rule, each approved
+  vs. deprecated variant, and each approved component/token as a check.
+- Only flag lines that appear in the diff. Ignore anything not present in the
+  diff (e.g. unchanged context lines are not findings on their own).
+- A line is a finding when it violates something the manifest explicitly states,
+  for example: using a component, variant, or size that is not approved; using a
+  deprecated variant; using a value instead of an approved token; or breaking any
+  rule in the manifest's "rules" array.
+- For each finding, report: the file it is in, the offending line or snippet, a
+  short description of the issue, and the reasoning — and in the reasoning cite
+  the specific manifest rule or manifest entry it breaks.
+
+Respond ONLY with valid JSON in exactly this shape, and output nothing else
+before or after it:
+{
+  "pass": true or false,
+  "findings": [
+    { "file": "...", "line": "...", "issue": "...", "reasoning": "..." }
+  ]
+}
+
+If there are no issues, return "pass": true with an empty "findings" array.
+Set "pass" to false if there is at least one finding.`;
 }
 
 // ============================================================
