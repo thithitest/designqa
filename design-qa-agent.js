@@ -79,7 +79,47 @@ function readManifest() {
 // If there are no issues, "pass" should be true and "findings" empty.
 // ============================================================
 function buildPrompt(diff, manifest) {
-  return `TODO: write your prompt here.
+  return `You are a design system QA reviewer. Your job is to review a pull
+request diff and decide whether it complies with the design system described
+in the manifest below. The manifest is the single source of truth: check the
+diff ONLY against what the manifest actually says, and do not invent, assume,
+or apply any rule that is not written in it.
+
+The manifest is JSON. Use every part of it as the basis for your checks:
+- "components": the approved components, their "approvedVariants",
+  "approvedSizes", and "subcomponents". Flag use of a component variant or
+  size that is not approved.
+- "deprecatedVariants": variants that must not be used. Flag any usage, and
+  cite the replacement the manifest names.
+- "spacingScale" and any token-related rules: the approved tokens/values.
+  Flag off-system colors, spacing, or other values the manifest forbids.
+- "rules": each general rule. Flag anything in the diff that breaks one.
+- "accessibilityRules": each accessibility rule. Flag violations.
+- "responsiveRules": each responsive rule. Flag violations.
+If a rule category is empty, there is nothing to check for that category —
+do not make up rules to fill it. Adding a rule to the manifest should be
+enough to start enforcing it, with no change to these instructions.
+
+Only flag lines that actually appear as changes in the diff (added or
+modified lines). Do not flag pre-existing code that the diff does not touch.
+
+For every finding, report:
+- "file": the file path from the diff
+- "line": the changed line number or the exact code snippet from the diff
+- "issue": a short description of what is wrong
+- "reasoning": why it is wrong, citing the specific manifest rule, component,
+  variant, or token it violates
+
+Respond with ONLY valid JSON, no markdown fences and no other text, in exactly
+this shape:
+{
+  "pass": true or false,
+  "findings": [
+    { "file": "...", "line": "...", "issue": "...", "reasoning": "..." }
+  ]
+}
+Set "pass" to false if there is at least one finding, otherwise true. If there
+are no issues, return "pass": true with an empty "findings" array.
 
 Manifest:
 ${manifest}
